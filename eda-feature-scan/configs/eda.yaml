@@ -1,0 +1,42 @@
+# EDA feature scan configuration
+# Sync definitions with data.features and data.categorical_columns in base.yaml
+
+eda_info:
+  # Feature columns to analyze (synced from base.yaml features.all_columns)
+  # Includes all features fed into the model; EDA scan will analyze each distribution and quality
+  features:
+    - order_submit_service_type
+    - log_time_slice
+    - city_code
+    - company_no
+    - is_rain
+    - service_type_response_rate_city
+
+
+  # Feature columns to exclude (ID, timestamp, label, and other meaningless columns)
+  exclude_features:
+    - dt
+    - ord_req_id
+    - create_time
+    - label_new
+
+  # Force as categorical features (synced from base.yaml data.categorical_columns)
+  # These columns may be integer type in parquet but should be treated as categorical
+  force_cat_features:
+    - order_submit_service_type
+    - log_time_slice
+    - city_code
+    - company_no
+    - is_rain
+    - order_start_lv7h3
+
+  # Input file type: parquet or csv (default: parquet; omit or set null for auto-detect)
+  file_type: parquet
+
+  # City code column used to compute "per-city median" for numerical features (for missing value imputation reference)
+  city_col: city_code
+
+  # Cross-categorical statistics pair list
+  # Computes cross distribution as [cat_a, cat_b], keeping items with 95% cumulative ratio per cat_a
+  cross_cat_pairs:
+    - ["city_code", "order_start_lv7h3"]
