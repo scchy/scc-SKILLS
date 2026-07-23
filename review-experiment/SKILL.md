@@ -17,24 +17,24 @@ Use it to record every experiment outcome and query past results before planning
 
 **Output Protocol**: Scripts print a single JSON object (compact, no pretty-printing) to stdout — parse it directly. Human-readable logs and warnings go to stderr. Failures exit non-zero and print `{"status": "error", "error": "..."}`.
 
-**Paths**: Scripts assume the task workspace as the working directory (`./input` for data, `./working` for journals). Override with the `INPUT_DIR` and `WORKING_DIR` environment variables if the framework executes from a different directory.
+**Paths**: Scripts assume the task workspace as the working directory: data is read from `./input/train.csv` (falling back to `./train.csv`, override with `INPUT_DIR`), journals go to `./working` (override with `WORKING_DIR`).
 
 ## Available Scripts
 
 ### 1. `submit_review.py`
 Submit a structured review after every `submit_predictions` or code execution.
 
-**Usage via `run_skill_script`**:
+**Usage via `run_command`**:
 ```python
-run_skill_script(
-    skill_name="review-experiment",
-    script_name="submit_review.py",
-    args="--submission_id sub_1 --is_bug false --metric 0.8542 --lower_is_better false --summary \"LightGBM baseline CV AUC 0.854\" --tags '[\"lightgbm\", \"baseline\"]'",
+run_command(
+    "python skills/review-experiment/scripts/submit_review.py "
+    "--submission_id sub_1 --is_bug false --metric 0.8542 --lower_is_better false "
+    "--summary \"LightGBM baseline CV AUC 0.854\" --tags '[\"lightgbm\", \"baseline\"]'"
 )
 ```
 
 **Arguments**:
-- `--task_id`: Optional. If omitted, auto-derived from `./input/train.csv` fingerprint or `$TASK_ID` env var.
+- `--task_id`: Optional. If omitted, auto-derived from the `train.csv` fingerprint (`./input/` or working directory) or `$TASK_ID` env var.
 - `--submission_id`: Submission ID (e.g., `sub_1`) or local run ID.
 - `--is_bug`: `true` if execution failed or metric is invalid.
 - `--metric`: CV metric value. Use `null` or omit if `is_bug=true`.
@@ -49,17 +49,16 @@ run_skill_script(
 - Warns (but still records) if `submission_id` already exists in the journal
 - An explicit `--task_id` is cached to `./working/.review_experiment_task_id` to keep later auto-derived calls on the same journal
 
-**Auto-derived task_id**: The script reads `./input/train.csv` header (first 8KB), hashes column count + first 3 column names + file size. This produces a stable ID for the same dataset across sessions. The ID is cached in `./working/.review_experiment_task_id`; if the dataset is swapped for a different one, the stale cached ID is discarded and re-derived. Task IDs may only contain letters, digits, `_` and `-`.
+**Auto-derived task_id**: The script reads the `train.csv` header (first 8KB, looked up in `./input/` then the working directory), hashes column count + first 3 column names + file size. This produces a stable ID for the same dataset across sessions. The ID is cached in `./working/.review_experiment_task_id`; if the dataset is swapped for a different one, the stale cached ID is discarded and re-derived. Task IDs may only contain letters, digits, `_` and `-`.
 
 ### 2. `get_history.py`
 Retrieve past experiment reviews before planning a new experiment.
 
-**Usage via `run_skill_script`**:
+**Usage via `run_command`**:
 ```python
-run_skill_script(
-    skill_name="review-experiment",
-    script_name="get_history.py",
-    args="--limit 10 --filter_status success",
+run_command(
+    "python skills/review-experiment/scripts/get_history.py "
+    "--limit 10 --filter_status success"
 )
 ```
 
@@ -77,10 +76,7 @@ run_skill_script(
 
 ### `experiment_journal_guide.md`
 Guidelines on maintaining an effective experiment journal and avoiding common pitfalls.
-You can read it using the `load_skill_resource` tool:
+Read it with `run_command`:
 ```python
-load_skill_resource(
-    skill_name="review-experiment",
-    resource_name="experiment_journal_guide.md",
-)
+run_command("cat skills/review-experiment/resources/experiment_journal_guide.md")
 ```

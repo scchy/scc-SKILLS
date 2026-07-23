@@ -24,35 +24,46 @@ def validate_task_id(task_id: str) -> str:
 
 
 def _compute_fingerprint(data_dir: str = INPUT_DIR) -> str | None:
-    """Compute dataset fingerprint. Supports CSV and Parquet."""
-    data_path = Path(data_dir)
+    """Compute dataset fingerprint. Supports CSV and Parquet.
 
-    # Try CSV first
-    train_csv = data_path / "train.csv"
-    if train_csv.exists():
-        try:
-            with open(train_csv, "rb") as f:
-                header = f.read(8192)
-            first_line = header.split(b"\n")[0].decode("utf-8", errors="ignore")
-            cols = first_line.strip().split(",")
-            file_size = train_csv.stat().st_size
-            fingerprint = f"csv_{len(cols)}_{'_'.join(cols[:3])}_{file_size}"
-            return hashlib.md5(fingerprint.encode()).hexdigest()[:12]
-        except Exception:
-            pass
+    Looks for train.csv / train.parquet in `data_dir` first, then in the
+    current working directory (competition sandboxes place data at root).
+    """
+    candidates = [Path(data_dir)]
+    cwd = Path(".")
+    try:
+        if cwd.resolve() != candidates[0].resolve():
+            candidates.append(cwd)
+    except OSError:
+        candidates.append(cwd)
 
-    # Try Parquet
-    train_parquet = data_path / "train.parquet"
-    if train_parquet.exists():
-        try:
-            file_size = train_parquet.stat().st_size
-            # Use first 8KB as rough fingerprint (parquet metadata varies)
-            with open(train_parquet, "rb") as f:
-                header = f.read(8192)
-            fingerprint = f"parquet_{file_size}_{hashlib.md5(header).hexdigest()[:8]}"
-            return hashlib.md5(fingerprint.encode()).hexdigest()[:12]
-        except Exception:
-            pass
+    for base in candidates:
+        # Try CSV first
+        train_csv = base / "train.csv"
+        if train_csv.exists():
+            try:
+                with open(train_csv, "rb") as f:
+                    header = f.read(8192)
+                first_line = header.split(b"\n")[0].decode("utf-8", errors="ignore")
+                cols = first_line.strip().split(",")
+                file_size = train_csv.stat().st_size
+                fingerprint = f"csv_{len(cols)}_{'_'.join(cols[:3])}_{file_size}"
+                return hashlib.md5(fingerprint.encode()).hexdigest()[:12]
+            except Exception:
+                pass
+
+        # Try Parquet
+        train_parquet = base / "train.parquet"
+        if train_parquet.exists():
+            try:
+                file_size = train_parquet.stat().st_size
+                # Use first 8KB as rough fingerprint (parquet metadata varies)
+                with open(train_parquet, "rb") as f:
+                    header = f.read(8192)
+                fingerprint = f"parquet_{file_size}_{hashlib.md5(header).hexdigest()[:8]}"
+                return hashlib.md5(fingerprint.encode()).hexdigest()[:12]
+            except Exception:
+                pass
 
     return None
 
