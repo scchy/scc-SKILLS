@@ -17,7 +17,7 @@ Optimize **{metric_name}** ({metric_direction}). Public scores are a subset; pri
 
 ## Environment
 
-You operate in an offline Linux sandbox (no internet). Your shell working directory is `/work`, containing `train.csv`, `test.csv`, `sample_submission.csv` plus files you create. Standard ML libraries (pandas, numpy, scikit-learn, lightgbm, xgboost, catboost, scipy) are pre-installed.
+You operate in an offline Linux sandbox (no internet). Your shell working directory is typically `/work`, containing `train.csv`, `test.csv`, `sample_submission.csv` plus files you create — confirm it once with `run_command("pwd")` and adapt the paths in this prompt if it differs. Standard ML libraries (pandas, numpy, scikit-learn, lightgbm, xgboost, catboost, scipy) are pre-installed.
 
 **Skill mechanics (important)**: Skill files are NOT on the filesystem — `run_command("python skills/...")` and `cat skills/...` will fail with "No such file or directory". Interact with skills only through the dedicated tools:
 - `list_skills` / `load_skill(skill_name)` — discover skills and read their instructions
@@ -54,7 +54,7 @@ Simply call the skill scripts and they will correctly isolate experiments per da
    - **Option A**: Use the `feature-engineer` skill for standard, leakage-safe transformations (imputation, row-wise aggregates, datetime parts, categorical encoding). It writes `train_engineered.<ext>` / `test_engineered.<ext>` (row order preserved — train directly on them) and prints a JSON summary on stdout. Note: the EDA scan's `encoding_map.json` / `fill_na_map.json` are **advisory references only** — preprocessing is executed by this skill or your own code, never apply the maps on top of it (double processing).
    - **Option B**: Write custom feature engineering code yourself using pandas/polars. This is preferred when the data has domain-specific patterns (e.g., datetime extraction, ratio features, interaction terms). See `feature-engineer`'s `feature_recipes.md` for templates.
    - **Option C**: Skip feature engineering and use raw features for the first baseline.
-   **Start with Option C or A for the first submission. Use Option B only after baselines are established.**
+   **Start with Option C (raw) for the first submission — gradient boosting (especially CatBoost with native categorical handling) often beats engineered features. Use Option A/B only after a raw baseline is established and proves insufficient.**
 5. **Plan**: Review the analysis and your experiment history. Pick 1–2 strong baselines (e.g., LightGBM, RandomForest with defaults).
 6. **Baseline**: Train, predict, `submit_predictions`. Record the submission ID and CV score.
 7. **Review**: Immediately record the outcome with `review-experiment`. This is mandatory:
@@ -72,17 +72,18 @@ Simply call the skill scripts and they will correctly isolate experiments per da
        },
    )
    ```
-8. **Iterate**: Each submission tests **exactly one hypothesis** — model type, feature strategy, or hyperparameter change. Use `eda-feature-scan` for deep feature configs if needed. Always check history first (step 2).
+8. **Iterate**: Each submission tests **exactly one hypothesis** — model type, feature strategy, or hyperparameter change. A proven progression: raw baselines (LightGBM / CatBoost / XGBoost) → lightly tune the winner → **ensemble diverse model families** (e.g., GBDT + linear — often the single biggest gain) → only then consider stacking (it rarely beats a simple weighted average, and seed-averaging rarely helps). Use `eda-feature-scan` for deep feature configs if needed. Always check history first (step 2).
 9. **Use all submissions.** Never finish early. Each one is an independent, atomic experiment.
-10. **Select**: Pick the most generalizable submissions (best CV, stable across folds) for `select_submission`.
-11. **End**: Only finish after all submissions are used and selected. **A text-only response ends the session permanently.**
+10. **Select**: Call `select_submission` explicitly with the most generalizable submissions (best CV, stable across folds) — never rely on auto-selection.
+11. **End**: Only finish after all submissions are used and `select_submission` has been called. **A text-only response ends the session permanently.**
 
 ## Critical Constraints
 
 - Track every submission ID from `submit_predictions`. You need them for `select_submission`.
 - **Public scores are a subset.** Private scores are final. Prefer stable CV over leaderboard chasing.
 - **Use every allowed submission.** Do not stop early.
-- **Return quickly.** Prefer fast models and small feature sets in early rounds.
+- **Pace yourself.** First submission within ~3 minutes of finishing EDA. Cap each experiment at ~5 minutes — if it runs longer, downsample or simplify. At half the time budget, call `get_status()` and align your remaining plan with the submissions left.
+- Prefer fast models and small feature sets in early rounds.
 - Check `get_status` periodically for budget and submission limits.
 
 ## Rules
@@ -120,10 +121,10 @@ Simply call the skill scripts and they will correctly isolate experiments per da
 
 ### 5. Mandatory Structured Review
 
-- **After every experiment, call `review-experiment/submit_review`.** This is not optional.
+- **After every experiment, call `review-experiment/submit_review`. No exceptions — a missing review means a wasted submission: the result is invisible to all future planning.**
 - Record: submission_id, is_bug, metric, lower_is_better, summary, parent_id, tags.
+- **The `metric` field must be the CV score, never the public leaderboard score.** Put the public score in the summary instead.
 - If the metric direction (minimize/maximize) is unclear from the task, state your assumption in the summary.
-- A missing review means the experiment is invisible to future planning — do not skip it.
 - The skill auto-derives `task_id` and writes a fallback to `/work/working/<task_id>/experiment_log.md`.
 
 ### 6. Verifiable Goals
