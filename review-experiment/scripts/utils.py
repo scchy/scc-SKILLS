@@ -1,5 +1,7 @@
 """Shared utilities for review-experiment skill."""
 
+from __future__ import annotations
+
 import hashlib
 import json
 import os
@@ -7,8 +9,17 @@ import re
 from pathlib import Path
 from typing import Any
 
-WORKING_DIR = Path(os.environ.get("WORKING_DIR", "./working"))
-INPUT_DIR = os.environ.get("INPUT_DIR", "./input")
+# In the kaggle-kaggle sandbox, run_skill_script executes scripts from a
+# temporary directory, so relative defaults would lose data between calls.
+# Default to the persistent sandbox work dir (/work) when it exists.
+_SANDBOX_ROOT = Path("/work")
+WORKING_DIR = Path(
+    os.environ.get("WORKING_DIR")
+    or (_SANDBOX_ROOT / "working" if _SANDBOX_ROOT.is_dir() else "./working")
+)
+INPUT_DIR = os.environ.get("INPUT_DIR") or (
+    str(_SANDBOX_ROOT) if _SANDBOX_ROOT.is_dir() else "./input"
+)
 TASK_ID_CACHE = WORKING_DIR / ".review_experiment_task_id"
 TASK_ID_PATTERN = re.compile(r"[A-Za-z0-9_-]+")
 FINGERPRINT_PREFIX = "task_"

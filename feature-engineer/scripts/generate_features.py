@@ -80,15 +80,26 @@ def is_id_like(col: str) -> bool:
     return c == "id" or c.endswith("_id")
 
 
+def _default_data_dir() -> str:
+    """Default I/O dir: the persistent sandbox work dir when present.
+
+    run_skill_script executes this script from a temporary directory that is
+    deleted afterwards, so relative defaults would read nothing and lose the
+    outputs. The kaggle-kaggle sandbox keeps data at /work.
+    """
+    return "/work" if Path("/work/train.csv").exists() else "."
+
+
 def main() -> None:
+    data_dir = _default_data_dir()
     parser = argparse.ArgumentParser(description="Generate automated ML features.")
-    parser.add_argument("--train", default="train.csv", help="Path to train file (.csv/.parquet)")
-    parser.add_argument("--test", default="test.csv", help="Path to test file (.csv/.parquet)")
+    parser.add_argument("--train", default=str(Path(data_dir) / "train.csv"), help="Path to train file (.csv/.parquet)")
+    parser.add_argument("--test", default=str(Path(data_dir) / "test.csv"), help="Path to test file (.csv/.parquet)")
     parser.add_argument("--target", default="target", help="Target column name in train")
     parser.add_argument(
         "--output_dir",
-        default=".",
-        help="Directory for engineered outputs (default: current directory)",
+        default=data_dir,
+        help="Directory for engineered outputs (default: data directory)",
     )
     parser.add_argument(
         "--id_cols",

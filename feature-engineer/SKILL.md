@@ -14,23 +14,40 @@ This skill equips the agent with a pre-packaged Python CLI script for automated 
 
 **Output Protocol**: The script prints a single JSON summary to stdout — parse it directly. Human-readable logs go to stderr. Failures exit non-zero and print `{"status": "error", "error": "..."}`.
 
+## How to Run (IMPORTANT)
+
+Skill files are **not** on the sandbox filesystem. Do **not** use `run_command("python skills/...")` or `cat skills/...` — they will fail with "No such file or directory". Use the dedicated skill tools instead:
+
+- Execute a script: `run_skill_script(skill_name="feature-engineer", file_path="scripts/<name>.py", args={...})`
+- Read a reference doc: `load_skill_resource(skill_name="feature-engineer", file_path="references/<name>.md")`
+
+The script runs from a temporary directory that is deleted afterwards, so all input/output paths must be **absolute**. The sandbox keeps data at `/work` (e.g. `/work/train.csv`); write outputs to `/work` as well — only files under `/work` persist and are visible to later `run_command` calls.
+
 ## Available Scripts
 
 ### 1. `generate_features.py`
 Automatically identifies column types, imputes missing values, and generates generic features. Everything is **fit on train only** and applied to test (see `leakage_checklist.md`).
 
-**Usage via `run_command`**:
+**Usage**:
 ```python
-run_command(
-    "python skills/feature-engineer/scripts/generate_features.py "
-    "--train train.csv --test test.csv --target target --output_dir ."
+run_skill_script(
+    skill_name="feature-engineer",
+    file_path="scripts/generate_features.py",
+    args={
+        "train": "/work/train.csv",
+        "test": "/work/test.csv",
+        "target": "target",
+        "output_dir": "/work",
+    },
 )
 ```
+Omitting `train`/`test`/`output_dir` defaults them to `/work` automatically (falling back to the current directory outside the sandbox).
+
 **Arguments**:
-- `--train`: Path to train file, `.csv` or `.parquet` (default: `train.csv`).
-- `--test`: Path to test file, `.csv` or `.parquet` (default: `test.csv`).
+- `--train`: Path to train file, `.csv` or `.parquet` (default: `/work/train.csv` in sandbox).
+- `--test`: Path to test file, `.csv` or `.parquet` (default: `/work/test.csv` in sandbox).
 - `--target`: Name of the target column (default: `target`).
-- `--output_dir`: Directory for engineered outputs (default: current directory).
+- `--output_dir`: Directory for engineered outputs (default: same as data dir).
 - `--id_cols`: Comma-separated extra columns to keep but exclude from row stats (optional; columns named `id` or `*_id` are excluded automatically).
 - `--one_hot_max`: Max unique values for one-hot encoding (default: `10`); higher-cardinality columns get frequency encoding.
 
@@ -51,13 +68,19 @@ Task-specific features (group-by aggregations, lags, interactions) are intention
 ## Domain Knowledge Resources
 
 ### `leakage_checklist.md`
-A concise guide on preventing data leakage during feature engineering. Read it with `run_command`:
+A concise guide on preventing data leakage during feature engineering. Read it with:
 ```python
-run_command("cat skills/feature-engineer/resources/leakage_checklist.md")
+load_skill_resource(
+    skill_name="feature-engineer",
+    file_path="references/leakage_checklist.md",
+)
 ```
 
 ### `feature_recipes.md`
 Code templates for the task-specific features `generate_features.py` intentionally does not generate: group-by aggregations, time-series lags, out-of-fold target encoding, and interactions. Read it the same way:
 ```python
-run_command("cat skills/feature-engineer/resources/feature_recipes.md")
+load_skill_resource(
+    skill_name="feature-engineer",
+    file_path="references/feature_recipes.md",
+)
 ```

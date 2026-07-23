@@ -7,13 +7,13 @@ Generate EDA report and feature engineering config files based on data scan resu
 import json
 import pandas as pd
 import numpy as np
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 import os
 
 
 class EDAReportGenerator:
-    def __init__(self, num_features_path: str, cat_features_path: str, cross_cat_features_path: str):
-        """Initialize the EDA report generator."""
+    def __init__(self, num_features_path: str, cat_features_path: str, cross_cat_features_path: Optional[str] = None):
+        """Initialize the EDA report generator. Cross-cat stats are optional."""
         self.num_features_path = num_features_path
         self.cat_features_path = cat_features_path
         self.cross_cat_features_path = cross_cat_features_path
@@ -25,8 +25,11 @@ class EDAReportGenerator:
         with open(cat_features_path, "r", encoding="utf-8") as f:
             self.cat_features = json.load(f)
 
-        with open(cross_cat_features_path, "r", encoding="utf-8") as f:
-            self.cross_cat_features = json.load(f)
+        if cross_cat_features_path and os.path.exists(cross_cat_features_path):
+            with open(cross_cat_features_path, "r", encoding="utf-8") as f:
+                self.cross_cat_features = json.load(f)
+        else:
+            self.cross_cat_features = {}
 
     def analyze_features(self) -> Dict[str, Any]:
         """Analyze features and generate recommendations."""
@@ -314,18 +317,27 @@ Based on cross_cat_features.json, special handling is suggested for the followin
 
 
 if __name__ == "__main__":
-    # File paths
-    CUR_DIR = os.path.dirname(os.path.abspath(__file__))
-    num_features_path = r"C:\Users\Chengchao.Sun\Downloads\num_features.json"
-    cat_features_path = r"C:\Users\Chengchao.Sun\Downloads\cat_features.json"
-    cross_cat_features_path = r"C:\Users\Chengchao.Sun\Downloads\cross_cat_features.json"
+    import argparse
 
-    # Create generator
-    generator = EDAReportGenerator(
-        num_features_path, cat_features_path, cross_cat_features_path
+    parser = argparse.ArgumentParser(
+        description="Generate EDA report and feature engineering configs from scan results."
     )
+    parser.add_argument("--num_features", required=True, help="Path to num_features.json")
+    parser.add_argument("--cat_features", required=True, help="Path to cat_features.json")
+    parser.add_argument(
+        "--cross_cat_features",
+        default=None,
+        help="Path to cross_cat_features.json (optional)",
+    )
+    parser.add_argument(
+        "--output_dir",
+        default=".",
+        help="Directory for outputs (use an absolute path under /work in the sandbox)",
+    )
+    args = parser.parse_args()
 
-    # Generate all outputs (saved to output/ subdirectory by default)
-    OUTPUT_DIR = os.path.join(CUR_DIR, "output")
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
-    generator.save_outputs(OUTPUT_DIR)
+    generator = EDAReportGenerator(
+        args.num_features, args.cat_features, args.cross_cat_features
+    )
+    os.makedirs(args.output_dir, exist_ok=True)
+    generator.save_outputs(args.output_dir)

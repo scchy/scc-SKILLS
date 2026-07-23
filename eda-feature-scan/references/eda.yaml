@@ -1,0 +1,31 @@
+# EDA feature scan configuration — generic defaults for any tabular dataset.
+# Override fields via CLI or by editing a copy for a specific dataset.
+
+eda_info:
+  # Feature columns to analyze (null / omit = all columns)
+  features: null
+
+  # Feature columns to exclude (IDs, timestamps, labels)
+  exclude_features: []
+
+  # Force as categorical (e.g. integer-encoded category IDs)
+  force_cat_features: []
+
+  # Input file type: parquet or csv (null = auto-detect)
+  file_type: null
+
+  # Column used to compute per-group medians for numerical features (null = skip)
+  city_col: null
+
+  # Cross-categorical statistics pairs, e.g. [["cat_a", "cat_b"]]
+  cross_cat_pairs: []
+
+  # Streaming engine: null = auto by data size, true/false to force
+  use_streaming: null
+
+  # Batch sizes (lower = safer on huge data)
+  num_stats_batch_size: 1
+  city_median_batch_size: 1
+
+  # EDA sampling ratio (0-1]
+  sample_ratio: 0.3
