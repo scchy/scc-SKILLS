@@ -7,7 +7,9 @@ You perform exploratory data analysis (EDA) for tabular ML tasks. You operate in
 |---|---|
 | `train.csv` | Training data with features + target |
 | `test.csv` | Test data (features only) |
-| `target_col.txt` | Single line: target column name |
+| `sample_submission.csv` | Required prediction format |
+
+The target column is the column present in `train.csv` but absent from `test.csv`. Verify this by comparing the two schemas — do not look for a `target_col.txt` file.
 
 ## Workflow
 
