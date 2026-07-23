@@ -14,14 +14,24 @@ This skill equips the agent with a pre-packaged Python CLI script for automated 
 
 **Output Protocol**: The script prints a single JSON summary to stdout — parse it directly. Human-readable logs go to stderr. Failures exit non-zero and print `{"status": "error", "error": "..."}`.
 
-## How to Run (IMPORTANT)
+## Usage
 
-Skill files are **not** on the sandbox filesystem. Do **not** use `run_command("python skills/...")` or `cat skills/...` — they will fail with "No such file or directory". Use the dedicated skill tools instead:
+### Normal environment (skill files on disk)
+
+```bash
+python scripts/generate_features.py --train train.csv --test test.csv --target target --output_dir .
+```
+
+Reference docs live under `references/` — just read them.
+
+### ADK / kaggle-kaggle sandbox (skill files NOT on disk)
+
+In harnesses where skills are injected as tools instead of files, `run_command("python skills/...")` and `cat skills/...` fail with "No such file or directory". Use the harness's skill tools instead:
 
 - Execute a script: `run_skill_script(skill_name="feature-engineer", file_path="scripts/<name>.py", args={...})`
 - Read a reference doc: `load_skill_resource(skill_name="feature-engineer", file_path="references/<name>.md")`
 
-The script runs from a temporary directory that is deleted afterwards, so all input/output paths must be **absolute**. The sandbox keeps data at `/work` (e.g. `/work/train.csv`); write outputs to `/work` as well — only files under `/work` persist and are visible to later `run_command` calls.
+The script then runs from a temporary directory that is deleted afterwards, so all input/output paths must be **absolute**. The sandbox keeps data at `/work` (e.g. `/work/train.csv`); write outputs to `/work` as well — only files under `/work` persist and are visible to later `run_command` calls.
 
 ## Available Scripts
 
@@ -29,7 +39,13 @@ The script runs from a temporary directory that is deleted afterwards, so all in
 Automatically identifies column types, imputes missing values, and generates generic features. Everything is **fit on train only** and applied to test (see `leakage_checklist.md`).
 
 **Usage**:
+```bash
+# On disk:
+python scripts/generate_features.py \
+    --train train.csv --test test.csv --target target --output_dir .
+```
 ```python
+# ADK / kaggle-kaggle sandbox:
 run_skill_script(
     skill_name="feature-engineer",
     file_path="scripts/generate_features.py",
@@ -41,7 +57,7 @@ run_skill_script(
     },
 )
 ```
-Omitting `train`/`test`/`output_dir` defaults them to `/work` automatically (falling back to the current directory outside the sandbox).
+Omitting `train`/`test`/`output_dir` defaults them to `/work` when it exists, otherwise the current directory.
 
 **Arguments**:
 - `--train`: Path to train file, `.csv` or `.parquet` (default: `/work/train.csv` in sandbox).
@@ -68,7 +84,7 @@ Task-specific features (group-by aggregations, lags, interactions) are intention
 ## Domain Knowledge Resources
 
 ### `leakage_checklist.md`
-A concise guide on preventing data leakage during feature engineering. Read it with:
+A concise guide on preventing data leakage during feature engineering. On disk, read `references/leakage_checklist.md` directly; in the ADK sandbox:
 ```python
 load_skill_resource(
     skill_name="feature-engineer",
@@ -77,7 +93,7 @@ load_skill_resource(
 ```
 
 ### `feature_recipes.md`
-Code templates for the task-specific features `generate_features.py` intentionally does not generate: group-by aggregations, time-series lags, out-of-fold target encoding, and interactions. Read it the same way:
+Code templates for the task-specific features `generate_features.py` intentionally does not generate: group-by aggregations, time-series lags, out-of-fold target encoding, and interactions. On disk, read `references/feature_recipes.md` directly; in the ADK sandbox:
 ```python
 load_skill_resource(
     skill_name="feature-engineer",

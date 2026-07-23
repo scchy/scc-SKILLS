@@ -10,9 +10,28 @@ Two-stage EDA pipeline for tabular data:
 1. **Feature Scan** (`parquet_feature_scan.py`): Scans CSV/Parquet files for numerical/categorical/cross-categorical statistics using Polars lazy evaluation
 2. **Report Generation** (`generate_eda_report.py`): Produces encoding maps, fill-na strategies, and numerical standardization params from scan results
 
-## How to Run (IMPORTANT)
+## Usage
 
-Skill files are **not** on the sandbox filesystem. Do **not** use `run_command("python skills/...")` or `cat skills/...` — they will fail with "No such file or directory". Use the dedicated skill tools instead:
+### Normal environment (skill files on disk)
+
+```bash
+# Stage 1: scan (data_dir must contain only the file(s) to scan — see below)
+python scripts/parquet_feature_scan.py \
+    --data_dir /path/to/eda_input --output_dir /path/to/eda_scan \
+    --config references/eda.yaml --file_type csv --sample_ratio 1.0
+
+# Stage 2: report
+python scripts/generate_eda_report.py \
+    --num_features /path/to/eda_scan/num_features.json \
+    --cat_features /path/to/eda_scan/cat_features.json \
+    --output_dir /path/to/eda_output
+```
+
+Reference docs live under `references/` (including the default config `references/eda.yaml`) — just read them.
+
+### ADK / kaggle-kaggle sandbox (skill files NOT on disk)
+
+In harnesses where skills are injected as tools instead of files, `run_command("python skills/...")` and `cat skills/...` fail with "No such file or directory". Use the harness's skill tools instead:
 
 - Execute a script: `run_skill_script(skill_name="eda-feature-scan", file_path="scripts/<name>.py", args={...})`
 - Read a reference doc: `load_skill_resource(skill_name="eda-feature-scan", file_path="references/<name>")`
@@ -21,15 +40,19 @@ Path rules under `run_skill_script`:
 
 - The script runs from a temporary directory that is deleted afterwards — **all data input/output paths must be absolute** (`/work/...`). Only files under `/work` persist and are visible to later `run_command` calls.
 - The skill's own `references/` and `scripts/` files ARE materialized next to the script, so `--config references/eda.yaml` (relative) works.
-- `--data_dir` must contain **only** the file(s) to scan — the scanner unions every CSV/Parquet it finds in the directory. `/work` also holds `test.csv` (no target column) and `sample_submission.csv`, which would break the scan, so stage the input first:
 
-```python
-run_command("mkdir -p /work/working/eda_input && cp /work/train.csv /work/working/eda_input/")
+### Staging the input (both modes)
+
+`--data_dir` must contain **only** the file(s) to scan — the scanner unions every CSV/Parquet it finds in the directory. In the kaggle-kaggle sandbox, `/work` also holds `test.csv` (no target column) and `sample_submission.csv`, which would break the scan, so stage the input first:
+
+```bash
+mkdir -p /work/working/eda_input && cp /work/train.csv /work/working/eda_input/
 ```
 
 ## Stage 1: Feature Scan
 
 ```python
+# ADK / kaggle-kaggle sandbox (on disk, use the bash form above):
 run_skill_script(
     skill_name="eda-feature-scan",
     file_path="scripts/parquet_feature_scan.py",
@@ -59,6 +82,7 @@ run_skill_script(
 ## Stage 2: Report Generation
 
 ```python
+# ADK / kaggle-kaggle sandbox (on disk, use the bash form above):
 run_skill_script(
     skill_name="eda-feature-scan",
     file_path="scripts/generate_eda_report.py",
@@ -83,7 +107,7 @@ These are **advisory references** for the modeling agent — actual imputation/e
 
 ## Configuration
 
-The bundled `references/eda.yaml` is a generic default (scan all columns, no forced categorical types, no cross pairs, `sample_ratio: 0.3`). For dataset-specific scans (exclude IDs/labels, force integer-coded columns to categorical, add cross pairs), read it first with `load_skill_resource(skill_name="eda-feature-scan", file_path="references/eda.yaml")`, then write a customized copy to `/work/working/my_eda.yaml` with `write_file` and pass `--config /work/working/my_eda.yaml`.
+The bundled `references/eda.yaml` is a generic default (scan all columns, no forced categorical types, no cross pairs, `sample_ratio: 0.8`). For dataset-specific scans (exclude IDs/labels, force integer-coded columns to categorical, add cross pairs), read it first (on disk directly, or via `load_skill_resource(skill_name="eda-feature-scan", file_path="references/eda.yaml")`), then write a customized copy (e.g. `/work/working/my_eda.yaml`) and pass it as `--config`.
 
 Key `eda_info` fields: `features`, `exclude_features`, `force_cat_features`, `city_col`, `cross_cat_pairs`, `file_type`, `use_streaming`, `num_stats_batch_size`, `sample_ratio`.
 

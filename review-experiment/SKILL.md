@@ -17,16 +17,30 @@ Use it to record every experiment outcome and query past results before planning
 
 **Output Protocol**: Scripts print a single JSON object (compact, no pretty-printing) to stdout — parse it directly. Human-readable logs and warnings go to stderr. Failures exit non-zero and print `{"status": "error", "error": "..."}`.
 
-## How to Run (IMPORTANT)
+## Usage
 
-Skill files are **not** on the sandbox filesystem. Do **not** use `run_command("python skills/...")` or `cat skills/...` — they will fail with "No such file or directory". Use the dedicated skill tools instead:
+### Normal environment (skill files on disk)
+
+Run the scripts directly with any Python:
+
+```bash
+python scripts/submit_review.py --submission_id sub_1 --is_bug false --metric 0.8542 \
+    --lower_is_better false --summary "LightGBM baseline" --tags '["lightgbm"]'
+python scripts/get_history.py --limit 20 --filter_status all
+```
+
+Reference docs live under `references/` — just read them.
+
+### ADK / kaggle-kaggle sandbox (skill files NOT on disk)
+
+In harnesses where skills are injected as tools instead of files, `run_command("python skills/...")` and `cat skills/...` fail with "No such file or directory". Use the harness's skill tools instead:
 
 - Execute a script: `run_skill_script(skill_name="review-experiment", file_path="scripts/<name>.py", args={...})`
 - Read a reference doc: `load_skill_resource(skill_name="review-experiment", file_path="references/<name>.md")`
 
-Scripts run from a temporary directory that is deleted afterwards, but all persistent state is written to the sandbox work dir (`/work/working/`), so journals survive across calls.
+Scripts then run from a temporary directory that is deleted afterwards, but all persistent state is written to the sandbox work dir (`/work/working/`), so journals survive across calls.
 
-**Paths**: data is read from `/work/train.csv` (override with `INPUT_DIR`), journals go to `/work/working` (override with `WORKING_DIR`). Outside the sandbox the defaults fall back to `./input` and `./working`.
+**Paths**: data is read from `$INPUT_DIR` (default: `/work` in that sandbox, otherwise `./input`, falling back to the current directory), journals go to `$WORKING_DIR` (default: `/work/working` or `./working`).
 
 ## Available Scripts
 
@@ -34,7 +48,14 @@ Scripts run from a temporary directory that is deleted afterwards, but all persi
 Submit a structured review after every `submit_predictions` or code execution.
 
 **Usage**:
+```bash
+# On disk:
+python scripts/submit_review.py --submission_id sub_1 --is_bug false \
+    --metric 0.8542 --lower_is_better false \
+    --summary "LightGBM baseline CV AUC 0.854" --tags '["lightgbm", "baseline"]'
+```
 ```python
+# ADK / kaggle-kaggle sandbox:
 run_skill_script(
     skill_name="review-experiment",
     file_path="scripts/submit_review.py",
@@ -71,7 +92,12 @@ run_skill_script(
 Retrieve past experiment reviews before planning a new experiment.
 
 **Usage**:
+```bash
+# On disk:
+python scripts/get_history.py --limit 20 --filter_status all
+```
 ```python
+# ADK / kaggle-kaggle sandbox:
 run_skill_script(
     skill_name="review-experiment",
     file_path="scripts/get_history.py",
@@ -93,7 +119,7 @@ run_skill_script(
 
 ### `experiment_journal_guide.md`
 Guidelines on maintaining an effective experiment journal and avoiding common pitfalls.
-Read it with:
+On disk, read `references/experiment_journal_guide.md` directly; in the ADK sandbox:
 ```python
 load_skill_resource(
     skill_name="review-experiment",

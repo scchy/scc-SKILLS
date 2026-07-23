@@ -149,9 +149,11 @@ def main() -> None:
         c for c in train_df.columns if c not in num_cols and c not in dt_cols
     ]
 
-    # CSV loads datetimes as strings; promote object columns that are >=90%
-    # parseable as dates so they get calendar parts instead of encoding
+    # CSV loads datetimes and numbers as strings; promote object columns that
+    # are >=90% parseable as dates or as numbers, so they get calendar parts or
+    # numeric treatment instead of being wrongly encoded as categoricals
     dt_detected = []
+    num_detected = []
     for col in list(cat_cols):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
@@ -164,12 +166,7 @@ def main() -> None:
             cat_cols.remove(col)
             dt_cols.append(col)
             dt_detected.append(col)
-
-    # Promote object columns that are >=90% numeric (numbers are often stored
-    # as strings in CSVs, e.g. "12.5" or "1,000"); otherwise they would be
-    # wrongly treated as categoricals and encoded
-    num_detected = []
-    for col in list(cat_cols):
+            continue
         cleaned_train = train_df[col].astype(str).str.replace(",", "", regex=False)
         parsed_train = pd.to_numeric(cleaned_train, errors="coerce")
         if parsed_train.notna().mean() >= 0.9:
