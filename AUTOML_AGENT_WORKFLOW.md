@@ -124,7 +124,7 @@ flowchart TD
 5 Key Design Principles
 
 1. **EDA-first**: `data_analyst` runs once at the start, always beginning with the mandatory `eda-feature-scan` deep scan.
-2. **技能保底，创意加分**: Start with Option C/A for baselines. Use Option B (custom code) only after baselines.
+2. **Skill guarantees the floor; creativity raises the ceiling**: Start with Option C/A for baselines. Use Option B (custom code) only after baselines.
 3. **History-first**: Every loop starts with `get_history`. No blind experiments.
 4. **Atomic changes**: Each submission tests exactly one variable (model / features / params).
 5. **Mandatory review**: `submit_review` is non-optional. Missing review = invisible experiment.
