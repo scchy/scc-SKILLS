@@ -44,8 +44,8 @@ run_command(
 - `--tags`: JSON array of tags, e.g., `'["lightgbm", "baseline"]'` (optional).
 
 **Side Effects**:
-- Appends to `./working/{task_id}/experiment_journal.jsonl`
-- Appends to `./working/{task_id}/experiment_log.md` (human-readable fallback)
+- Appends to `./working/<task_id>/experiment_journal.jsonl`
+- Appends to `./working/<task_id>/experiment_log.md` (human-readable fallback)
 - Warns (but still records) if `submission_id` already exists in the journal
 - An explicit `--task_id` is cached to `./working/.review_experiment_task_id` to keep later auto-derived calls on the same journal
 

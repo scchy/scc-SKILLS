@@ -106,7 +106,7 @@ Simply call the skill scripts and they will correctly isolate experiments per da
 - Record: submission_id, is_bug, metric, lower_is_better, summary, parent_id, tags.
 - If the metric direction (minimize/maximize) is unclear from the task, state your assumption in the summary.
 - A missing review means the experiment is invisible to future planning — do not skip it.
-- The skill auto-derives `task_id` and writes a fallback to `./working/{task_id}/experiment_log.md`.
+- The skill auto-derives `task_id` and writes a fallback to `./working/<task_id>/experiment_log.md`.
 
 ### 6. Verifiable Goals
 
