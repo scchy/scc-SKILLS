@@ -1,6 +1,6 @@
 __pycache__/
 *.pyc
-prompts/data_analyst.md
+prompts/*.md
 AUTOML_AGENT_WORKFLOW.md
 SYSTEM_PROMPT.md
 
