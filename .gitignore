@@ -1,7 +1,5 @@
 __pycache__/
 *.pyc
-prompts/*.md
-AUTOML_AGENT_WORKFLOW.md
-SYSTEM_PROMPT.md
 
-competiton_doc
+# 比赛存档(本地保留,不入库)
+competition/

@@ -791,7 +791,19 @@ def save_results(
         with open(output_dir / "cross_cat_features.json", "w", encoding="utf-8") as f:
             json.dump(cross_cat, f, ensure_ascii=False, indent=2)
 
-    # Excel (for easy viewing)
+    # Excel (for easy viewing) — optional convenience output; the JSON files
+    # above are the authoritative artifacts. Skip gracefully when the Excel
+    # engine (openpyxl) is not installed instead of crashing the whole scan.
+    try:
+        import openpyxl  # noqa: F401
+    except ImportError:
+        logger.warning(
+            "openpyxl not installed; skipping .xlsx export "
+            "(JSON outputs in %s are unaffected)",
+            output_dir,
+        )
+        return
+
     if cat_feature:
         cat_df = _flatten_cat_features(cat_feature)
         cat_df.to_excel(output_dir / "cat_features.xlsx", index=False)

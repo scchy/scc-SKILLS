@@ -124,5 +124,6 @@ Key `eda_info` fields: `features`, `exclude_features`, `force_cat_features`, `ci
 - **OOM on cross-cat stats**: Reduce features in `cross_cat_pairs` or increase sampling
 - **Slow scan**: Use `--sample_ratio 0.1` for quick exploration, then full run for production
 - **Schema mismatch error**: `--data_dir` contains files with different columns (e.g. `test.csv` without target) — stage only `train.csv` as described above
+- **Missing `.xlsx` outputs**: the Excel exports are optional convenience copies; without `openpyxl` installed they are skipped with a warning. The JSON outputs are authoritative and always written.
 
 For detailed API reference, see `references/reference.md` (via `load_skill_resource`).
