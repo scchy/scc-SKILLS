@@ -16,6 +16,7 @@
 3. **目录约定**:参考文档一律放 `references/`,脚本放 `scripts/`——ADK 只认 `references/` / `assets/` / `scripts/`。SKILL.md 内的相对链接必须真实存在(CI 链接校验)。
 4. **双模式**(带脚本的 skill):SKILL.md 需同时给出「本地直接跑」与「ADK 沙箱 `run_skill_script` / `load_skill_resource`」两种调用方式;沙箱段落必须强调:skill 文件不在沙箱文件系统上、脚本在临时目录执行、数据 I/O 传 `/work` 下绝对路径。工作流型 skill(无脚本)不需要双模式章节。
 5. **保持精简**:SKILL.md 是 prompt,不是文档——能一句话说清的别写一段;prompt 文本的边际收益接近噪声,只写有行为影响的内容。
+6. **同步 README**:每次新增/删除 skill 或改动其用途后,必须更新 `README.md` 的分类表(归入现有分类或新增分类)。
 
 ## 脚本规则
 
