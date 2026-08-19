@@ -2,29 +2,31 @@
 
 个人 skill 集:AutoML Agent 比赛技能 + 学习材料处理流水线 + 代码清理/优化,附比赛存档。
 
+skill 按类型分目录存放:`automl/`(比赛类)、`study/`(学习材料处理类)、`code-cleanup/`(代码清理/优化类)。
+
 ## Skills(git 跟踪)
 
-### AutoML 比赛类(双模式:本地直接跑脚本,或在 ADK / kaggle-kaggle 沙箱中通过 `run_skill_script` / `load_skill_resource` 调用,详见各自 `SKILL.md`)
+### `automl/` — AutoML 比赛类(双模式:本地直接跑脚本,或在 ADK / kaggle-kaggle 沙箱中通过 `run_skill_script` / `load_skill_resource` 调用,详见各自 `SKILL.md`)
 
 | Skill | 用途 |
 |---|---|
-| `eda-feature-scan/` | 表格数据 EDA 两阶段流水线:特征扫描(Polars)+ 编码/填充配置生成 |
-| `feature-engineer/` | 泄漏安全的自动特征工程(插补、行统计、datetime 部件、类别编码) |
-| `review-experiment/` | JSONL 实验日志:结构化 review 提交 + 历史检索,按数据集指纹自动隔离 task |
+| `automl/eda-feature-scan/` | 表格数据 EDA 两阶段流水线:特征扫描(Polars)+ 编码/填充配置生成 |
+| `automl/feature-engineer/` | 泄漏安全的自动特征工程(插补、行统计、datetime 部件、类别编码) |
+| `automl/review-experiment/` | JSONL 实验日志:结构化 review 提交 + 历史检索,按数据集指纹自动隔离 task |
 
-### 学习材料处理类(工作流型,无脚本)
-
-| Skill | 用途 |
-|---|---|
-| `process-study-materials/` | 学习材料处理流水线:论文/文章翻译、仓库克隆、离线讲解网页构建 |
-
-### 代码清理 / 优化类(工作流型,无脚本,源自社区,来源见各 SKILL.md)
+### `study/` — 学习材料处理类(工作流型,无脚本)
 
 | Skill | 用途 |
 |---|---|
-| `remove-deadcode/` | 死代码清理:扫描 → LSP 引用验证 → 并行子代理分批删除,原子化 commit |
-| `cleanup-sprint/` | 整体仓库清理:代码+依赖+文档+测试一起瘦身,基线保护三段式 |
-| `code-simplification/` | 代码简化/去过度设计:行为不变前提下重构精简,专治 AI 生成代码冗余 |
+| `study/process-study-materials/` | 学习材料处理流水线:论文/文章翻译、仓库克隆、离线讲解网页构建 |
+
+### `code-cleanup/` — 代码清理 / 优化类(工作流型,无脚本,源自社区,来源见各 SKILL.md)
+
+| Skill | 用途 |
+|---|---|
+| `code-cleanup/remove-deadcode/` | 死代码清理:扫描 → LSP 引用验证 → 并行子代理分批删除,原子化 commit |
+| `code-cleanup/cleanup-sprint/` | 整体仓库清理:代码+依赖+文档+测试一起瘦身,基线保护三段式 |
+| `code-cleanup/code-simplification/` | 代码简化/去过度设计:行为不变前提下重构精简,专治 AI 生成代码冗余 |
 
 ## 比赛存档(本地,不入库)
 

@@ -4,7 +4,7 @@
 
 ## 仓库结构
 
-- `<skill-name>/` — 一个目录一个 skill,内含 `SKILL.md`(必需)、`references/`(参考文档)、`scripts/`(可执行脚本)
+- skill 按类型分目录:`automl/`(AutoML 比赛类)、`study/`(学习材料处理类)、`code-cleanup/`(代码清理/优化类);`<类型>/<skill-name>/` 内含 `SKILL.md`(必需)、`references/`(参考文档)、`scripts/`(可执行脚本)
 - `scripts/` — 仓库级工具(如 `validate_skills.py`),不是 skill
 - `competition/` — 比赛存档,**gitignore 本地保留,永不入库**
 - `.github/workflows/ci.yml` — 结构校验 + 脚本编译(py3.8/3.12 矩阵)
@@ -27,6 +27,6 @@
 
 ## 提交流程
 
-1. 提交前本地必过:`python scripts/validate_skills.py` 和 `python -m compileall -q */scripts/ scripts/`。
+1. 提交前本地必过:`python scripts/validate_skills.py` 和 `python -m compileall -q automl/ study/ code-cleanup/ scripts/`。
 2. commit message:emoji 前缀 + 中文简述(参照 git log 风格:✨/🐛/📝/♻️/🔒)。
 3. 比赛相关内容(prompt、agent 配置、实验记录)一律放 `competition/`,不得提交入库。

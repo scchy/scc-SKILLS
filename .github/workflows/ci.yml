@@ -23,4 +23,4 @@ jobs:
         run: python scripts/validate_skills.py
 
       - name: Compile all skill scripts
-        run: python -m compileall -q */scripts/
+        run: python -m compileall -q automl/ study/ code-cleanup/
