@@ -1,6 +1,6 @@
 # scc-SKILLS
 
-AutoML Agent 的 skill 集与比赛存档。
+个人 skill 集:AutoML Agent 比赛技能 + 学习材料处理流水线,附比赛存档。
 
 ## Skills(git 跟踪)
 
@@ -9,8 +9,9 @@ AutoML Agent 的 skill 集与比赛存档。
 | `eda-feature-scan/` | 表格数据 EDA 两阶段流水线:特征扫描(Polars)+ 编码/填充配置生成 |
 | `feature-engineer/` | 泄漏安全的自动特征工程(插补、行统计、datetime 部件、类别编码) |
 | `review-experiment/` | JSONL 实验日志:结构化 review 提交 + 历史检索,按数据集指纹自动隔离 task |
+| `process-study-materials/` | 学习材料处理流水线:论文/文章翻译、仓库克隆、离线讲解网页构建(工作流型,无脚本) |
 
-每个 skill 支持双模式:本地直接跑脚本,或在 ADK / kaggle-kaggle 沙箱中通过 `run_skill_script` / `load_skill_resource` 调用,详见各自 `SKILL.md`。
+前三个 AutoML skill 支持双模式:本地直接跑脚本,或在 ADK / kaggle-kaggle 沙箱中通过 `run_skill_script` / `load_skill_resource` 调用,详见各自 `SKILL.md`。
 
 ## 比赛存档(本地,不入库)
 
